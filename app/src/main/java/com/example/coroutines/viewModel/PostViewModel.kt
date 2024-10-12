@@ -2,6 +2,7 @@ package com.example.coroutines.viewModel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.coroutines.data.model.Post
 import com.example.coroutines.data.remote.ApiClient
 import kotlinx.coroutines.CoroutineScope
@@ -14,8 +15,15 @@ class PostViewModel : ViewModel() {
     val postList = MutableLiveData<List<Post>>()
     val postListError = MutableLiveData<String?>()
     val loading = MutableLiveData<Boolean>()
+
     fun getAllPostsRequest() {
+
         loading.value = true
+
+        viewModelScope.launch(Dispatchers.IO) {
+
+        }
+
         CoroutineScope(Dispatchers.IO).launch {
             val response = try {
                 ApiClient.api.getAllPosts()

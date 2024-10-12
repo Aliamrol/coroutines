@@ -46,20 +46,8 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    lifecycleScope.launchWhenCreated {
-                        repeat(100000) {
-                            delay(1000)
-                            println("repeat $it")
-                        }
-                    }
+                    ObservePostsViewModel()
 
-                    GlobalScope.launch {
-                        delay(7000)
-                        Intent(this@MainActivity, SecondActivity::class.java).also {
-                            startActivity(it)
-                            finish()
-                        }
-                    }
                 }
             }
         }
