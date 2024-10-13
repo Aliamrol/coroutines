@@ -54,25 +54,24 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     runBlocking {
-                        println("start app")
-                        val job1: Job = GlobalScope.launch {
-                            repeat(100) {
-                                delay(10)
-                                println("job 1 is working : ${it + 1}%")
-                            }
-                        }
-                        job1.invokeOnCompletion { // زمانی که یک جاب به پایان برسه انجام میشه
-                            println("job 1 is completed")
+
+                        GlobalScope.launch(context = Dispatchers.Main) { // UI works
+                            println("Main dispatcher in Thread : ${Thread.currentThread().name}")
                         }
 
-//                        job1.join() // برنامه را متوقف میکند تا یک جاب به پایان برسد(ساسپند فانشکن هستش )
-//                        println("job1 is finish")
+                        launch(context = Dispatchers.Unconfined) {
+                            println("Unconfined Unconfined 1  in Thread : ${Thread.currentThread().name}")
+                            delay(1000)
+                            println("Unconfined Unconfined 2 in Thread : ${Thread.currentThread().name}")
+                        }
 
-                        delay(100)
-                        job1.cancel()
-                        println("job1 is cancel!")
+                        launch(context = Dispatchers.IO) {
+                            println("IO dispatcher in Thread : ${Thread.currentThread().name}")
+                        }
 
-                        println("resume app")
+                        launch(context = Dispatchers.Default) {
+                            println("Default dispatcher in Thread : ${Thread.currentThread().name}")
+                        }
                     }
                 }
             }
