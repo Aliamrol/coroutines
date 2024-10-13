@@ -1,7 +1,6 @@
 package com.example.coroutines
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,29 +20,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import com.example.coroutines.data.model.Post
 import com.example.coroutines.ui.theme.CoroutinesTheme
 import com.example.coroutines.viewModel.PostViewModel
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlin.concurrent.thread
+import kotlin.system.measureTimeMillis
 
 class MainActivity : ComponentActivity() {
 
     private var counter: Int = 0
 
-    @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,28 +44,31 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     runBlocking {
-
-                        GlobalScope.launch(context = Dispatchers.Main) { // UI works
-                            println("Main dispatcher in Thread : ${Thread.currentThread().name}")
+//                        val deferred = async {
+//
+//                        }
+                        val time = measureTimeMillis {
+                            val firstDeferred = async { calApi1() }
+                            async { delay(2000) }
+                            val secondDeferred = async { calApi2() }
+                            println("sum is : ${firstDeferred.await() + secondDeferred.await()}")
                         }
 
-                        launch(context = Dispatchers.Unconfined) {
-                            println("Unconfined Unconfined 1  in Thread : ${Thread.currentThread().name}")
-                            delay(1000)
-                            println("Unconfined Unconfined 2 in Thread : ${Thread.currentThread().name}")
-                        }
-
-                        launch(context = Dispatchers.IO) {
-                            println("IO dispatcher in Thread : ${Thread.currentThread().name}")
-                        }
-
-                        launch(context = Dispatchers.Default) {
-                            println("Default dispatcher in Thread : ${Thread.currentThread().name}")
-                        }
+                        println(time)
                     }
                 }
             }
         }
+    }
+
+    suspend fun calApi1(): Int {
+        delay(3000)
+        return 3
+    }
+
+    suspend fun calApi2(): Int {
+        delay(4000)
+        return 5
     }
 
     suspend fun sayHello() {
