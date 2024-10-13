@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -28,14 +29,20 @@ import androidx.lifecycle.lifecycleScope
 import com.example.coroutines.data.model.Post
 import com.example.coroutines.ui.theme.CoroutinesTheme
 import com.example.coroutines.viewModel.PostViewModel
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.concurrent.thread
 
 class MainActivity : ComponentActivity() {
+
+    private var counter: Int = 0
+
     @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,13 +53,43 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    ObservePostsViewModel()
+                    runBlocking {
+                        println("start app")
+                        val job1: Job = GlobalScope.launch {
+                            repeat(100) {
+                                delay(10)
+                                println("job 1 is working : ${it + 1}%")
+                            }
+                        }
+                        job1.invokeOnCompletion { // زمانی که یک جاب به پایان برسه انجام میشه
+                            println("job 1 is completed")
+                        }
 
+//                        job1.join() // برنامه را متوقف میکند تا یک جاب به پایان برسد(ساسپند فانشکن هستش )
+//                        println("job1 is finish")
+
+                        delay(100)
+                        job1.cancel()
+                        println("job1 is cancel!")
+
+                        println("resume app")
+                    }
                 }
             }
         }
     }
 
+    suspend fun sayHello() {
+        delay(1000)
+        println("Hello!")
+        counter = 20
+    }
+
+    suspend fun sayHi() {
+        delay(1000)
+        println("Hi!")
+        counter = 10
+    }
 
     @Composable
     private fun ObservePostsViewModel() {
