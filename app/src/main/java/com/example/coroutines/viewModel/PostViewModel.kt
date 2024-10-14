@@ -32,7 +32,7 @@ class PostViewModel : ViewModel() {
                 loading.value = false
                 return@launch
             }
-            withContext(Dispatchers.Main) {
+            withContext(Dispatchers.Main) { // change dispatcher
                 if (response.isSuccessful && response.body() != null) {
                     response.body()?.let { allPost ->
                         postList.value = allPost
