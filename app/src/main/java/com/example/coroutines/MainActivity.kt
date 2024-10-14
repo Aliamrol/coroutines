@@ -25,15 +25,22 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.coroutines.data.model.Post
 import com.example.coroutines.ui.theme.CoroutinesTheme
 import com.example.coroutines.viewModel.PostViewModel
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlin.system.measureTimeMillis
 
 class MainActivity : ComponentActivity() {
 
     private var counter: Int = 0
 
+    @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,17 +51,26 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     runBlocking {
-//                        val deferred = async {
-//
-//                        }
-                        val time = measureTimeMillis {
-                            val firstDeferred = async { calApi1() }
-                            async { delay(2000) }
-                            val secondDeferred = async { calApi2() }
-                            println("sum is : ${firstDeferred.await() + secondDeferred.await()}")
+                        val errorHandler =
+                            CoroutineExceptionHandler { coroutineContext, throwable ->
+                                println("error is : ${throwable.message}")
+                                println("coroutineContext is : $coroutineContext")
+                            }
+                        val job =
+                            GlobalScope.launch(context = errorHandler) { // can pass {Dispatchers.anything + errorHandler} to contex
+                                delay(3000)
+                                throw NullPointerException() // ایجاد یک ارور دستی
+                            }
+                        job.join()
+                        val deferred = GlobalScope.async {
+                            delay(3000)
+                            throw NullPointerException()
                         }
-
-                        println(time)
+                        try {
+                            deferred.await()
+                        } catch (e: Exception) {
+                            println("err is : ${e.message}")
+                        }
                     }
                 }
             }
